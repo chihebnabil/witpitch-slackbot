@@ -4,12 +4,13 @@
   "description": "Witpitch",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "pm2-runtime start ecosystem.config.js --env production",
+    "dev": "nodemon index.js --env development"
   },
   "license": "MIT",
   "dependencies": {
     "@google-cloud/bigquery": "^6.2.0",
-    "@slack/bolt": "^3.6.0"
+    "@slack/bolt": "^3.6.0",
+    "pm2": "^5.3.0"
   }
 }
