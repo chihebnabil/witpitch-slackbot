@@ -169,7 +169,7 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
     userMessage += `Here are some additional information about the candidate :\n\n` + pitch + `\n\n`
   }
 
-  console.log(staffingRequestQuery[0][0]])
+  console.log(staffingRequestQuery[0][0])
 
   userMessage += `Please generate the perfect pitch that highlights the developer's expertise and experience, matches the staffing request, and introduces him as the ideal candidate.
   `
