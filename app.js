@@ -169,10 +169,12 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
     userMessage += `Here are some additional information about the candidate :\n\n` + pitch + `\n\n`
   }
 
+  console.log(staffingRequestQuery[0][0]])
+
   userMessage += `Please generate the perfect pitch that highlights the developer's expertise and experience, matches the staffing request, and introduces him as the ideal candidate.
   `
 
-  userMessage  += `\n PLEASE LIMIT THE TEXT TO MAXIMUM 400 CHARACTERS`
+  userMessage  += `\n PLEASE LIMIT THE OUTPUT TEXT TO MAXIMUM 400 CHARACTERS LENGTH`
 
   const rs = await openai.openai.createChatCompletion({
     model: "gpt-3.5-turbo-16k",
