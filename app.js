@@ -9,7 +9,7 @@ const blocks = require('./blocks.js')
 
 const bigquery = new BigQuery({
   projectId: 'proxify-data',
-  keyFilename: './service_account.json'
+  keyFilename: process.env.SERVER_KEY_PATH
 });
 
 
