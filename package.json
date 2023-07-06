@@ -1,7 +1,7 @@
 {
-  "name": "bolt-js-getting-started-app",
-  "version": "2.0.0",
-  "description": "Getting Started ⚡️ Slackbot for JavaScript",
+  "name": "witpitch-slackbot",
+  "version": "1.0.0",
+  "description": "Witpitch",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/bigquery": "^6.2.0",
     "@slack/bolt": "^3.6.0"
   }
 }
