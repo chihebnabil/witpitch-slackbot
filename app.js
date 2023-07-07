@@ -1,17 +1,8 @@
-const { App, HTTPReceiver } = require('@slack/bolt');
+const { App } = require('@slack/bolt');
 require('dotenv').config();
 const openai = require('./open_ai.js');
-const { BigQuery } = require('@google-cloud/bigquery');
 const blocks = require('./blocks.js')
-/*
-* Initialize BigQuery client using the service account key (service_account.json)
-*/
-
-const bigquery = new BigQuery({
-  projectId: 'proxify-data',
-  keyFilename: process.env.SERVER_KEY_PATH
-});
-
+const queries = require('./queries.js')
 
 // Initializes your app with your bot token and app token
 const app = new App({
@@ -98,14 +89,29 @@ app.command('/which_skills', async ({ command, ack, say }) => {
 * Load the options from the external data menu field
 */
 app.options('autocomplete_field', async ({ options, ack }) => {
+  let staffingRequests = await queries.findStaffingRequest(options.value);
+  options.options = staffingRequests.map((staffingRequest) => {
+    return {
+      text: {
+        type: 'plain_text',
+        text: staffingRequest.request_title
+      },
+      value: staffingRequest.id.toString()
+    }
+  }).slice(0, 5);
   return await ack({
-    options:[]
+    options: options.options
   });
 });
 
 app.action('autocomplete_field', async ({ body, ack, say }) => {
   await ack();
-  console.log('autocomplete_field action')  
+  /*
+  * Get the selected option from the menu field
+  */
+  const selectedOption = body.actions[0].selected_option;
+  const staffingRequest = await queries.getStaffingRequest(selectedOption.value)
+  console.log(staffingRequest)
 });
 
 app.action('pitch_button_click', async ({ body, ack, say }) => {
@@ -115,66 +121,25 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
   let pitch = body.state.values[inputKeys[2]].pitch_input.value
   let developerId = body.state.values[inputKeys[1]].developer_id.value
 
-  const profileQuery = await bigquery.query({
-    query: `SELECT 
-    d.id,
-    d.name,
-    d.title.en as title,
-    d.summary.en as summary,
-    d.commitment,
-    d.community_id,
-    d.alias,
-    TO_JSON(sk.skill_proficiency_level) as skills, 
-    sk.education,
-    je.job_experience
-  FROM 
-  \`proxify.developers\` d 
-  JOIN \`proxify-data.proxify_analytics.v_developer_profile_skills\` sk on d.id = sk.developer_id
-  JOIN (
-    SELECT 
-      ex.developer_id,
-      TO_JSON(ARRAY_AGG(
-        STRUCT(
-          ex.id,
-          ex.employer,
-          ex.job_description,
-          ex.title,
-          ex.start_date,
-          ex.end_date,
-          ex.still_working,
-          (SELECT ARRAY_AGG(skill.skills_name) FROM UNNEST(ex.skills_used) as skill) AS skills_used
-        )
-      )) AS job_experience
-    FROM \`proxify-data.proxify_analytics.v_developer_profile_job_experience\` ex
-    GROUP BY ex.developer_id
-  ) je on d.id = je.developer_id
-    WHERE d.id = ${developerId} LIMIT 1`
-  })
-
-
-  const staffingRequestQuery = await bigquery.query({
-    query: `SELECT *
-    FROM \`proxify-data.proxify.recruitments\`
-    WHERE id = ${staffingRequestId} 
-    LIMIT 1`
-  })
-
+  const profileQuery = await queries.getDeveloper(developerId)
+  const staffingRequestQuery = await queries.getStaffingRequest(staffingRequestId)
+  
   let userMessage = `
   Please help me generate the perfect pitch based on the given details
   Here's the candidate information (represented as javascript object) :\n\n 
-  ${profileQuery[0][0]} 
-  \n\n And Here's the staffing request informations :\n\n ${staffingRequestQuery[0][0].additional_information}\n\n`
+  ${profileQuery} 
+  \n\n And Here's the staffing request informations :\n\n ${staffingRequestQuery.additional_information}\n\n`
 
   if (pitch != null && pitch != undefined && pitch != '') {
     userMessage += `Here are some additional information about the candidate :\n\n` + pitch + `\n\n`
   }
 
-  console.log(staffingRequestQuery[0][0])
+  console.log(profileQuery)
 
   userMessage += `Please generate the perfect pitch that highlights the developer's expertise and experience, matches the staffing request, and introduces him as the ideal candidate.
   `
 
-  userMessage  += `\n PLEASE LIMIT THE OUTPUT TEXT TO MAXIMUM 400 CHARACTERS LENGTH`
+  userMessage += `\n PLEASE LIMIT THE OUTPUT TEXT TO MAXIMUM 400 CHARACTERS LENGTH`
 
   const rs = await openai.openai.createChatCompletion({
     model: "gpt-3.5-turbo-16k",
