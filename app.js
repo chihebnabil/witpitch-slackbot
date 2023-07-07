@@ -19,60 +19,7 @@ app.error(async (error) => {
 app.command('/pitch', async ({ command, ack, say }) => {
   await ack();
   await say({
-    blocks: [
-      {
-        "type": "input",
-        "element": {
-          "type": "plain_text_input",
-          "action_id": "staffing_request_id"
-        },
-        "label": {
-          "type": "plain_text",
-          "text": "Staffing Request ID",
-          "emoji": true
-        }
-      },
-      {
-        "type": "input",
-        "element": {
-          "type": "plain_text_input",
-          "action_id": "developer_id"
-        },
-        "label": {
-          "type": "plain_text",
-          "text": "Developer ID",
-          "emoji": true
-        }
-      },
-      {
-        "type": "input",
-        "element": {
-          "type": "plain_text_input",
-          "multiline": true,
-          "action_id": "pitch_input"
-        },
-        "label": {
-          "type": "plain_text",
-          "text": "What is not mentioned in the profile that highlights why this candidate is a great fit for the role?",
-          "emoji": true
-        }
-      },
-      {
-        "type": "actions",
-        "elements": [
-          {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "text": "Pitch",
-              "emoji": true
-            },
-            "value": "click_me_123",
-            "action_id": "pitch_button_click"
-          }
-        ]
-      }
-    ],
+    blocks: blocks.REQUEST_PITCH_BLOCK,
   });
 });
 
@@ -80,7 +27,7 @@ app.command('/which_skills', async ({ command, ack, say }) => {
   await ack();
   console.log('autocomplete_field command')
   await say({
-    blocks: blocks.PITCH_BLOCK,
+    blocks: blocks.SKILLS_EXTRACT_BLOCK,
   });
 });
 
@@ -123,7 +70,7 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
 
   const profileQuery = await queries.getDeveloper(developerId)
   const staffingRequestQuery = await queries.getStaffingRequest(staffingRequestId)
-  
+
   let userMessage = `
   Please help me generate the perfect pitch based on the given details
   Here's the candidate information (represented as javascript object) :\n\n 
