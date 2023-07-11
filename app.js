@@ -70,7 +70,6 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
 
   const profileQuery = await queries.getDeveloper(developerId)
   const staffingRequestQuery = await queries.getStaffingRequest(staffingRequestId)
-
   let userMessage = `
   Please help me generate the perfect pitch based on the given details
   Here's the candidate information (represented as javascript object) :\n\n 
@@ -80,8 +79,6 @@ app.action('pitch_button_click', async ({ body, ack, say }) => {
   if (pitch != null && pitch != undefined && pitch != '') {
     userMessage += `Here are some additional information about the candidate :\n\n` + pitch + `\n\n`
   }
-
-  console.log(profileQuery)
 
   userMessage += `Please generate the perfect pitch that highlights the developer's expertise and experience, matches the staffing request, and introduces him as the ideal candidate.
   `

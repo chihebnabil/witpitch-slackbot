@@ -12,13 +12,12 @@ const bigquery = new BigQuery({
 async function getStaffingRequest(id) {
 
 
-    const query = `SELECT id, request_title , additional_information FROM \`proxify-data.proxify.recruitments\` WHERE id = ${id}`;
+    const query = `SELECT id, request_title , additional_information FROM \`proxify-data.proxify.recruitments\` WHERE id = ${id} LIMIT 1`;
     const options = {
         query: query,
     };
 
     const [rows] = await bigquery.query(options);
-
     return rows[0];
 }
 
@@ -27,7 +26,7 @@ async function findStaffingRequest(q) {
   
     const query = `SELECT id, request_title , additional_information FROM \`proxify-data.proxify.recruitments\`  
     WHERE deleted_at is null and completed_at is null and state = true and
-    request_title like '%${q}%'`;
+    request_title like '%${q}%' `;
     const options = {
         query: query,
     };
